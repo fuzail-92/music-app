@@ -2,6 +2,7 @@ const Music = require("../models/music.model");
 const { uploadFile } = require("../services/storage.service");
 const Album = require("../models/album.model");
 const Like = require("../models/like.model");
+const Playlist = require("../models/playlist.model");
 // Music upload karna (sirf artist)
 async function createMusic(req, res) {
   try {
@@ -332,6 +333,132 @@ async function getLikedMusics(req, res) {
     return res.status(500).json({ message: "Server error" });
   }
 }
+
+// Naya playlist banana (koi bhi logged-in user)
+async function createPlaylist(req, res) {
+  try {
+    const { name, isPublic } = req.body;
+    if (!name) {
+      return res.status(400).json({ message: "Playlist name is required" });
+    }
+
+    const playlist = await Playlist.create({
+      name,
+      user: req.user.id,
+      isPublic: isPublic || false,
+    });
+    return res.status(201).json({ message: "Playlist created", playlist });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Server error" });
+  }
+}
+
+// Playlist mein music add karna (sirf owner)
+async function addToPlaylist(req, res) {
+  try {
+    const { playlistId, musicId } = req.body;
+    if (!playlistId || !musicId) {
+      return res
+        .status(400)
+        .json({ message: "playlistId and musicId are required" });
+    }
+
+    // findOne with user filter — sirf apni hi playlist milegi
+    const playlist = await Playlist.findOne({
+      _id: playlistId,
+      user: req.user.id,
+    });
+    if (!playlist) {
+      return res
+        .status(404)
+        .json({ message: "Playlist not found or not yours" });
+    }
+
+    const music = await Music.findById(musicId);
+    if (!music) {
+      return res.status(404).json({ message: "Music not found" });
+    }
+
+    if (playlist.musics.includes(musicId)) {
+      return res.status(400).json({ message: "Music already in playlist" });
+    }
+
+    playlist.musics.push(musicId);
+    await playlist.save();
+    return res.json({ message: "Music added to playlist", playlist });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Server error" });
+  }
+}
+
+// Playlist se music remove karna
+async function removeFromPlaylist(req, res) {
+  try {
+    const { playlistId, musicId } = req.body;
+    if (!playlistId || !musicId) {
+      return res
+        .status(400)
+        .json({ message: "playlistId and musicId are required" });
+    }
+
+    const playlist = await Playlist.findOne({
+      _id: playlistId,
+      user: req.user.id,
+    });
+    if (!playlist) {
+      return res
+        .status(404)
+        .json({ message: "Playlist not found or not yours" });
+    }
+
+    if (!playlist.musics.includes(musicId)) {
+      return res.status(400).json({ message: "Music not in playlist" });
+    }
+
+    playlist.musics = playlist.musics.filter((id) => id.toString() !== musicId);
+    await playlist.save();
+    return res.json({ message: "Music removed from playlist", playlist });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Server error" });
+  }
+}
+
+// User ki apni saari playlists (private bhi shamil)
+async function getUserPlaylists(req, res) {
+  try {
+    const playlists = await Playlist.find({ user: req.user.id }).populate(
+      "musics",
+    );
+    return res.json({ message: "Your playlists", playlists });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Server error" });
+  }
+}
+
+// Playlist delete karna
+async function deletePlaylist(req, res) {
+  try {
+    const playlistId = req.params.id;
+    const playlist = await Playlist.findOne({
+      _id: playlistId,
+      user: req.user.id,
+    });
+    if (!playlist) {
+      return res
+        .status(404)
+        .json({ message: "Playlist not found or not yours" });
+    }
+    await Playlist.findByIdAndDelete(playlistId);
+    return res.json({ message: "Playlist deleted successfully" });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Server error" });
+  }
+}
 module.exports = {
   createMusic,
   getAllMusics,
@@ -346,4 +473,9 @@ module.exports = {
   likeMusic,
   unlikeMusic,
   getLikedMusics,
+  createPlaylist,
+  addToPlaylist,
+  removeFromPlaylist,
+  getUserPlaylists,
+  deletePlaylist,
 };
