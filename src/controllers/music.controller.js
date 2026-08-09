@@ -1,7 +1,7 @@
 const Music = require("../models/music.model");
 const { uploadFile } = require("../services/storage.service");
 const Album = require("../models/album.model");
-
+const Like = require("../models/like.model");
 // Music upload karna (sirf artist)
 async function createMusic(req, res) {
   try {
@@ -270,6 +270,68 @@ async function removeMusicFromAlbum(req, res) {
   }
 }
 
+// Music ko like karna (koi bhi logged-in user)
+async function likeMusic(req, res) {
+  try {
+    const { musicId } = req.body;
+    if (!musicId) {
+      return res.status(400).json({ message: "musicId is required" });
+    }
+
+    const music = await Music.findById(musicId);
+    if (!music) {
+      return res.status(404).json({ message: "Music not found" });
+    }
+
+    const existingLike = await Like.findOne({
+      user: req.user.id,
+      music: musicId,
+    });
+    if (existingLike) {
+      return res.status(400).json({ message: "Already liked" });
+    }
+
+    await Like.create({ user: req.user.id, music: musicId });
+    return res.json({ message: "Music liked" });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Server error" });
+  }
+}
+
+// Music ko unlike karna
+async function unlikeMusic(req, res) {
+  try {
+    const { musicId } = req.body;
+    if (!musicId) {
+      return res.status(400).json({ message: "musicId is required" });
+    }
+
+    const result = await Like.findOneAndDelete({
+      user: req.user.id,
+      music: musicId,
+    });
+    if (!result) {
+      return res.status(404).json({ message: "Like not found" });
+    }
+    return res.json({ message: "Music unliked" });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Server error" });
+  }
+}
+
+// Logged-in user ke saare liked musics
+async function getLikedMusics(req, res) {
+  try {
+    const likes = await Like.find({ user: req.user.id }).populate("music");
+    const musics = likes.map((like) => like.music);
+    return res.json({ message: "Liked musics", musics });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Server error" });
+  }
+}
 module.exports = {
   createMusic,
   getAllMusics,
@@ -281,4 +343,7 @@ module.exports = {
   deleteAlbum,
   addMusicToAlbum,
   removeMusicFromAlbum,
+  likeMusic,
+  unlikeMusic,
+  getLikedMusics,
 };
