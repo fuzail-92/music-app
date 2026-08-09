@@ -4,6 +4,7 @@ const validateEnv = require("./src/config/validateEnv");
 validateEnv();
 
 const express = require("express");
+const cookieParser = require("cookie-parser");
 const connectDB = require("./src/db/db");
 const authRoutes = require("./src/routes/auth.routes");
 
@@ -11,6 +12,7 @@ const app = express();
 
 // Body ko JSON ki tarah parse karne ke liye — is se req.body kaam karega
 app.use(express.json());
+app.use(cookieParser());
 
 app.get("/", (req, res) => {
   res.send("Music API is running");
