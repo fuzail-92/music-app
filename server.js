@@ -1,5 +1,8 @@
 v = require("dotenv").config(); // .env file load karna sabse pehle
 
+const validateEnv = require("./src/config/validateEnv");
+validateEnv();
+
 const express = require("express");
 const connectDB = require("./src/db/db");
 
