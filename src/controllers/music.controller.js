@@ -37,5 +37,54 @@ async function createMusic(req, res) {
     return res.status(500).json({ message: "Server error" });
   }
 }
+// Sab musics fetch karna, pagination ke sath
+async function getAllMusics(req, res) {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 3;
+    const skip = (page - 1) * limit;
 
-module.exports = { createMusic };
+    const musics = await Music.find()
+      .skip(skip)
+      .limit(limit)
+      .populate("artist", "username email"); // sirf ye 2 fields artist ki
+
+    const total = await Music.countDocuments();
+
+    return res.json({
+      message: "Musics fetched successfully",
+      musics,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit),
+      },
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Server error" });
+  }
+}
+
+// Title se music search karna (case-insensitive)
+async function searchMusics(req, res) {
+  try {
+    const { q } = req.query;
+    if (!q) {
+      return res
+        .status(400)
+        .json({ message: "Search query parameter q is required" });
+    }
+
+    const musics = await Music.find({
+      title: { $regex: q, $options: "i" }, // 'i' = case-insensitive
+    }).populate("artist", "username email");
+
+    return res.json({ message: "Search results", musics });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Server error" });
+  }
+}
+module.exports = { createMusic, getAllMusics, searchMusics };
