@@ -182,6 +182,93 @@ async function getAlbumById(req, res) {
     return res.status(500).json({ message: "Server error" });
   }
 }
+// Album delete karna (sirf apna, owner check)
+async function deleteAlbum(req, res) {
+  try {
+    const albumId = req.params.id;
+    const album = await Album.findById(albumId);
+    if (!album) {
+      return res.status(404).json({ message: "Album not found" });
+    }
+    if (album.artist.toString() !== req.user.id) {
+      return res
+        .status(403)
+        .json({ message: "You can only delete your own albums" });
+    }
+    await Album.findByIdAndDelete(albumId);
+    return res.json({ message: "Album deleted successfully" });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Server error" });
+  }
+}
+
+// Album mein music add karna (owner check)
+async function addMusicToAlbum(req, res) {
+  try {
+    const { albumId, musicId } = req.body;
+    if (!albumId || !musicId) {
+      return res
+        .status(400)
+        .json({ message: "albumId and musicId are required" });
+    }
+
+    const album = await Album.findById(albumId);
+    if (!album) {
+      return res.status(404).json({ message: "Album not found" });
+    }
+    if (album.artist.toString() !== req.user.id) {
+      return res.status(403).json({ message: "Not your album" });
+    }
+
+    const music = await Music.findById(musicId);
+    if (!music) {
+      return res.status(404).json({ message: "Music not found" });
+    }
+
+    if (album.musics.includes(musicId)) {
+      return res.status(400).json({ message: "Music already in album" });
+    }
+
+    album.musics.push(musicId);
+    await album.save();
+    return res.json({ message: "Music added to album", album });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Server error" });
+  }
+}
+
+// Album se music remove karna (owner check)
+async function removeMusicFromAlbum(req, res) {
+  try {
+    const { albumId, musicId } = req.body;
+    if (!albumId || !musicId) {
+      return res
+        .status(400)
+        .json({ message: "albumId and musicId are required" });
+    }
+
+    const album = await Album.findById(albumId);
+    if (!album) {
+      return res.status(404).json({ message: "Album not found" });
+    }
+    if (album.artist.toString() !== req.user.id) {
+      return res.status(403).json({ message: "Not your album" });
+    }
+
+    if (!album.musics.includes(musicId)) {
+      return res.status(400).json({ message: "Music not in album" });
+    }
+
+    album.musics = album.musics.filter((id) => id.toString() !== musicId);
+    await album.save();
+    return res.json({ message: "Music removed from album", album });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Server error" });
+  }
+}
 
 module.exports = {
   createMusic,
@@ -191,4 +278,7 @@ module.exports = {
   createAlbum,
   getAllAlbums,
   getAlbumById,
+  deleteAlbum,
+  addMusicToAlbum,
+  removeMusicFromAlbum,
 };
