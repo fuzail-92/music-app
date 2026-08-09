@@ -1,17 +1,30 @@
 require("dotenv").config();
 
 const validateEnv = require("./src/config/validateEnv");
-const musicRoutes = require("./src/routes/music.routes");
 validateEnv();
 
 const express = require("express");
 const cookieParser = require("cookie-parser");
+const morgan = require("morgan");
+const rateLimit = require("express-rate-limit");
 const connectDB = require("./src/db/db");
 const authRoutes = require("./src/routes/auth.routes");
+const musicRoutes = require("./src/routes/music.routes");
 
 const app = express();
 
-// Body ko JSON ki tarah parse karne ke liye — is se req.body kaam karega
+// Request logging — har request terminal mein print hogi
+app.use(morgan("dev"));
+
+// Rate limiting — 15 minute mein max 100 requests per IP
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100,
+  message: { message: "Too many requests, please try again later." },
+});
+app.use("/api/", limiter);
+
+// Body parsing aur cookies
 app.use(express.json());
 app.use(cookieParser());
 
@@ -19,7 +32,6 @@ app.get("/", (req, res) => {
   res.send("Music API is running");
 });
 
-// Auth routes ko /api/auth prefix ke sath jodo
 app.use("/api/auth", authRoutes);
 app.use("/api/music", musicRoutes);
 
