@@ -55,4 +55,59 @@ async function registerUser(req, res) {
   }
 }
 
-module.exports = { registerUser };
+// User login
+async function loginUser(req, res) {
+  try {
+    const { username, email, password } = req.body;
+
+    if ((!username && !email) || !password) {
+      return res
+        .status(400)
+        .json({ message: "Username/email and password required" });
+    }
+
+    // User ko dhoondo username ya email se
+    const user = await User.findOne({ $or: [{ username }, { email }] });
+    if (!user) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
+
+    // Password compare karo (hashed wale se)
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
+
+    const token = jwt.sign(
+      { id: user._id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" },
+    );
+
+    res.cookie("token", token, {
+      httpOnly: true,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    return res.json({
+      message: "Login successful",
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+      },
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Server error" });
+  }
+}
+
+// User logout
+async function logoutUser(req, res) {
+  res.clearCookie("token");
+  return res.json({ message: "Logged out successfully" });
+}
+
+module.exports = { registerUser, loginUser, logoutUser };
