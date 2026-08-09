@@ -1,20 +1,26 @@
-v = require("dotenv").config(); // .env file load karna sabse pehle
+require("dotenv").config();
 
 const validateEnv = require("./src/config/validateEnv");
 validateEnv();
 
 const express = require("express");
 const connectDB = require("./src/db/db");
+const authRoutes = require("./src/routes/auth.routes");
 
 const app = express();
+
+// Body ko JSON ki tarah parse karne ke liye — is se req.body kaam karega
+app.use(express.json());
 
 app.get("/", (req, res) => {
   res.send("Music API is running");
 });
 
+// Auth routes ko /api/auth prefix ke sath jodo
+app.use("/api/auth", authRoutes);
+
 const PORT = process.env.PORT || 3000;
 
-// Pehle database se connect karo, tab hi server start karo
 connectDB()
   .then(() => {
     app.listen(PORT, () => {
