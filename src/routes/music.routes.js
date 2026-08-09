@@ -5,6 +5,7 @@ const {
   createMusic,
   getAllMusics,
   searchMusics,
+  deleteMusic,
 } = require("../controllers/music.controller");
 
 const storage = multer.memoryStorage();
@@ -12,11 +13,10 @@ const upload = multer({ storage });
 
 const router = express.Router();
 
-// Koi bhi logged-in user dekh/search kar sakta hai
 router.get("/", authUser, getAllMusics);
 router.get("/search", authUser, searchMusics);
 
-// Sirf artist upload kar sakta hai
 router.post("/upload", authArtist, upload.single("music"), createMusic);
+router.delete("/:id", authArtist, deleteMusic);
 
 module.exports = router;

@@ -5,7 +5,7 @@ const { uploadFile } = require("../services/storage.service");
 async function createMusic(req, res) {
   try {
     const { title } = req.body;
-    const file = req.file; // multer isko yahan attach karega
+    const file = req.file;
 
     if (!title || !file) {
       return res
@@ -13,14 +13,13 @@ async function createMusic(req, res) {
         .json({ message: "Title and music file are required" });
     }
 
-    // File ko base64 mein convert karo (ImageKit ko isi format mein chahiye)
     const fileBase64 = file.buffer.toString("base64");
     const uploadResult = await uploadFile(fileBase64);
 
     const music = await Music.create({
       uri: uploadResult.url,
       title,
-      artist: req.user.id, // middleware se mila hua
+      artist: req.user.id,
     });
 
     return res.status(201).json({
@@ -37,6 +36,7 @@ async function createMusic(req, res) {
     return res.status(500).json({ message: "Server error" });
   }
 }
+
 // Sab musics fetch karna, pagination ke sath
 async function getAllMusics(req, res) {
   try {
@@ -47,7 +47,7 @@ async function getAllMusics(req, res) {
     const musics = await Music.find()
       .skip(skip)
       .limit(limit)
-      .populate("artist", "username email"); // sirf ye 2 fields artist ki
+      .populate("artist", "username email");
 
     const total = await Music.countDocuments();
 
@@ -78,7 +78,7 @@ async function searchMusics(req, res) {
     }
 
     const musics = await Music.find({
-      title: { $regex: q, $options: "i" }, // 'i' = case-insensitive
+      title: { $regex: q, $options: "i" },
     }).populate("artist", "username email");
 
     return res.json({ message: "Search results", musics });
@@ -87,4 +87,30 @@ async function searchMusics(req, res) {
     return res.status(500).json({ message: "Server error" });
   }
 }
-module.exports = { createMusic, getAllMusics, searchMusics };
+
+// Music delete karna (sirf apna, artist hi kar sakta hai)
+async function deleteMusic(req, res) {
+  try {
+    const musicId = req.params.id;
+
+    const music = await Music.findById(musicId);
+    if (!music) {
+      return res.status(404).json({ message: "Music not found" });
+    }
+
+    if (music.artist.toString() !== req.user.id) {
+      return res
+        .status(403)
+        .json({ message: "You can only delete your own music" });
+    }
+
+    await Music.findByIdAndDelete(musicId);
+
+    return res.json({ message: "Music deleted successfully" });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Server error" });
+  }
+}
+
+module.exports = { createMusic, getAllMusics, searchMusics, deleteMusic };
