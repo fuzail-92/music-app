@@ -1,5 +1,6 @@
 const Music = require("../models/music.model");
 const { uploadFile } = require("../services/storage.service");
+const Album = require("../models/album.model");
 
 // Music upload karna (sirf artist)
 async function createMusic(req, res) {
@@ -112,5 +113,82 @@ async function deleteMusic(req, res) {
     return res.status(500).json({ message: "Server error" });
   }
 }
+// Album create karna (sirf artist)
+async function createAlbum(req, res) {
+  try {
+    const { title, musics } = req.body;
 
-module.exports = { createMusic, getAllMusics, searchMusics, deleteMusic };
+    if (!title) {
+      return res.status(400).json({ message: "Album title is required" });
+    }
+    if (!musics || !Array.isArray(musics) || musics.length === 0) {
+      return res.status(400).json({ message: "Musics array is required" });
+    }
+
+    // Check karo ke saari music IDs valid hain
+    const existingMusics = await Music.find({ _id: { $in: musics } });
+    if (existingMusics.length !== musics.length) {
+      return res
+        .status(400)
+        .json({ message: "One or more music IDs are invalid" });
+    }
+
+    const album = await Album.create({
+      title,
+      musics,
+      artist: req.user.id,
+    });
+
+    return res.status(201).json({
+      message: "Album created successfully",
+      album: {
+        id: album._id,
+        title: album.title,
+        musics: album.musics,
+        artist: album.artist,
+      },
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Server error" });
+  }
+}
+
+// Sab albums fetch karna (basic info, musics nahi)
+async function getAllAlbums(req, res) {
+  try {
+    const albums = await Album.find()
+      .select("title artist")
+      .populate("artist", "username email");
+    return res.json({ message: "Albums fetched successfully", albums });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Server error" });
+  }
+}
+
+// Ek album ki poori detail (musics ke sath)
+async function getAlbumById(req, res) {
+  try {
+    const album = await Album.findById(req.params.albumId)
+      .populate("artist", "username email")
+      .populate("musics");
+    if (!album) {
+      return res.status(404).json({ message: "Album not found" });
+    }
+    return res.json({ message: "Album fetched successfully", album });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Server error" });
+  }
+}
+
+module.exports = {
+  createMusic,
+  getAllMusics,
+  searchMusics,
+  deleteMusic,
+  createAlbum,
+  getAllAlbums,
+  getAlbumById,
+};
