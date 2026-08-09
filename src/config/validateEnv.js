@@ -1,6 +1,5 @@
 // Wo saari environment variables jo hamesha honi chahiye
-const requiredEnv = ["PORT", "MONGO_URI", "JWT_SECRET"];
-
+const requiredEnv = ["PORT", "MONGO_URI", "JWT_SECRET", "IMAGEKIT_PRIVATE_KEY"];
 function validateEnv() {
   for (const key of requiredEnv) {
     if (!process.env[key]) {

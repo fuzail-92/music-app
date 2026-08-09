@@ -1,6 +1,7 @@
 require("dotenv").config();
 
 const validateEnv = require("./src/config/validateEnv");
+const musicRoutes = require("./src/routes/music.routes");
 validateEnv();
 
 const express = require("express");
@@ -20,6 +21,7 @@ app.get("/", (req, res) => {
 
 // Auth routes ko /api/auth prefix ke sath jodo
 app.use("/api/auth", authRoutes);
+app.use("/api/music", musicRoutes);
 
 const PORT = process.env.PORT || 3000;
 
