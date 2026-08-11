@@ -6,6 +6,7 @@ import Login from "./pages/Login";
 import Browse from "./pages/Browse";
 import Upload from "./pages/Upload";
 import Playlists from "./pages/Playlists";
+import Albums from "./pages/Albums";
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
             <Route path="login" element={<Login />} />
             <Route path="upload" element={<Upload />} />
             <Route path="playlists" element={<Playlists />} />
+            <Route path="albums/new" element={<Albums />} />
           </Route>
         </Routes>
       </BrowserRouter>
