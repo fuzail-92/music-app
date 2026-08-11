@@ -7,6 +7,7 @@ const express = require("express");
 const cookieParser = require("cookie-parser");
 const morgan = require("morgan");
 const rateLimit = require("express-rate-limit");
+const cors = require("cors");
 const connectDB = require("./src/db/db");
 const authRoutes = require("./src/routes/auth.routes");
 const musicRoutes = require("./src/routes/music.routes");
@@ -16,9 +17,16 @@ const app = express();
 // Request logging — har request terminal mein print hogi
 app.use(morgan("dev"));
 
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  }),
+);
+
 // Rate limiting — 15 minute mein max 100 requests per IP
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
+  windowMs: 15 * 60 * 1000,
   max: 100,
   message: { message: "Too many requests, please try again later." },
 });
