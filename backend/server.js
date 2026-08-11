@@ -17,9 +17,20 @@ const app = express();
 // Request logging — har request terminal mein print hogi
 app.use(morgan("dev"));
 
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://music-app-frontend.vercel.app", // Vercel deploy hone ke baad exact URL se replace karenge
+];
+
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
   }),
 );
