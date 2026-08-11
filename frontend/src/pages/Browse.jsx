@@ -1,12 +1,15 @@
 import { useEffect, useState } from "react";
 import api from "../api/axios";
+import { useAuth } from "../context/AuthContext";
 
 function Browse() {
+  const { user } = useAuth();
   const [musics, setMusics] = useState([]);
   const [pagination, setPagination] = useState(null);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [likedIds, setLikedIds] = useState(new Set());
 
   useEffect(() => {
     let cancelled = false;
@@ -34,6 +37,44 @@ function Browse() {
       cancelled = true;
     };
   }, [page]);
+
+  useEffect(() => {
+    if (!user) return;
+    async function fetchLikes() {
+      try {
+        const res = await api.get("/music/likes");
+        setLikedIds(new Set(res.data.musics.map((m) => m._id)));
+      } catch {
+        // silent — likes are a nice-to-have, not critical
+      }
+    }
+    fetchLikes();
+  }, [user]);
+
+  async function toggleLike(musicId) {
+    if (!user) return;
+    const isLiked = likedIds.has(musicId);
+    // optimistic update — UI turant badal deti hai, backend ke jawab ka wait nahi karti
+    setLikedIds((prev) => {
+      const next = new Set(prev);
+      isLiked ? next.delete(musicId) : next.add(musicId);
+      return next;
+    });
+    try {
+      if (isLiked) {
+        await api.delete("/music/like", { data: { musicId } });
+      } else {
+        await api.post("/music/like", { musicId });
+      }
+    } catch {
+      // fail ho to wapas purani state mein le aayein
+      setLikedIds((prev) => {
+        const next = new Set(prev);
+        isLiked ? next.add(musicId) : next.delete(musicId);
+        return next;
+      });
+    }
+  }
 
   return (
     <div>
@@ -88,6 +129,27 @@ function Browse() {
                       strokeWidth="1.5"
                     />
                   </svg>
+                  {user && (
+                    <button
+                      className={`like-btn ${likedIds.has(m._id) ? "liked" : ""}`}
+                      onClick={() => toggleLike(m._id)}
+                      title={likedIds.has(m._id) ? "Unlike" : "Like"}
+                    >
+                      <svg
+                        viewBox="0 0 24 24"
+                        width="16"
+                        height="16"
+                        fill={likedIds.has(m._id) ? "currentColor" : "none"}
+                      >
+                        <path
+                          d="M12 21s-7.5-4.6-10-9.3C.5 8.4 2 5 5.5 5c2 0 3.5 1.2 4.5 2.7C11 6.2 12.5 5 14.5 5 18 5 19.5 8.4 22 11.7 19.5 16.4 12 21 12 21z"
+                          stroke="currentColor"
+                          strokeWidth="1.6"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </button>
+                  )}
                 </div>
                 <div className="track-info">
                   <div className="track-title">{m.title}</div>

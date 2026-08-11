@@ -701,3 +701,30 @@ textarea {
   font-size: 13.5px;
   margin-top: 8px;
 }
+/* ---------- Like button ---------- */
+.like-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 3;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: rgba(21, 19, 15, 0.55);
+  backdrop-filter: blur(4px);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+.like-btn:hover {
+  color: var(--danger);
+  border-color: var(--danger);
+}
+.like-btn.liked {
+  color: var(--danger);
+  border-color: var(--danger);
+  background: rgba(217, 101, 79, 0.15);
+}
