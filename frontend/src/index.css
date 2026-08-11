@@ -525,3 +525,50 @@ textarea {
   font-size: 13px;
   color: var(--text-faint);
 }
+/* ---------- Form card (Upload, Create Album, etc.) ---------- */
+.form-card {
+  background: var(--panel);
+  border: 1px solid var(--border-soft);
+  border-radius: 14px;
+  padding: 32px;
+  max-width: 480px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.file-drop {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 26px 16px;
+  text-align: center;
+  font-size: 13.5px;
+  color: var(--text-faint);
+  cursor: pointer;
+  transition: all 0.15s;
+  background: var(--panel-raised);
+}
+.file-drop:hover {
+  border-color: var(--accent-dim);
+  color: var(--text-dim);
+}
+.file-drop.has-file {
+  border-color: var(--accent);
+  border-style: solid;
+  color: var(--accent);
+}
+.file-drop input {
+  display: none;
+}
+
+.auth-success {
+  background: rgba(95, 191, 179, 0.12);
+  border: 1px solid rgba(95, 191, 179, 0.3);
+  color: var(--teal);
+  padding: 10px 12px;
+  border-radius: var(--radius);
+  font-size: 13px;
+}

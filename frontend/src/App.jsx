@@ -4,6 +4,7 @@ import Layout from "./components/Layout";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
 import Browse from "./pages/Browse";
+import Upload from "./pages/Upload";
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
             <Route index element={<Browse />} />
             <Route path="register" element={<Register />} />
             <Route path="login" element={<Login />} />
+            <Route path="upload" element={<Upload />} />
           </Route>
         </Routes>
       </BrowserRouter>
