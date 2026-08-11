@@ -19,7 +19,9 @@ app.use(morgan("dev"));
 
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://music-app-frteam1.vercel.app", // Vercel deploy hone ke baad exact URL se replace karenge
+  "https://music-app-one-lemon.vercel.app",
+  "https://music-app-frteam1.vercel.app",
+  "https://music-ep872vosb-frteam1.vercel.app", // Vercel deploy hone ke baad exact URL se replace karenge
 ];
 
 app.use(
