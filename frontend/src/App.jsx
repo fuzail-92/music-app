@@ -3,14 +3,7 @@ import { AuthProvider } from "./context/AuthContext";
 import Layout from "./components/Layout";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
-
-function Home() {
-  return (
-    <h1 style={{ fontFamily: "var(--font-display)", fontSize: "32px" }}>
-      Browse (coming soon)
-    </h1>
-  );
-}
+import Browse from "./pages/Browse";
 
 function App() {
   return (
@@ -18,7 +11,7 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Layout />}>
-            <Route index element={<Home />} />
+            <Route index element={<Browse />} />
             <Route path="register" element={<Register />} />
             <Route path="login" element={<Login />} />
           </Route>

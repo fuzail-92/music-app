@@ -378,3 +378,150 @@ textarea {
   border-color: var(--danger);
   color: var(--danger);
 }
+/* ---------- Page head ---------- */
+.page-head {
+  margin-bottom: 28px;
+}
+.page-title {
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+.state-msg {
+  color: var(--text-dim);
+  font-size: 14px;
+  padding: 20px 0;
+}
+.state-msg.error {
+  color: var(--danger);
+}
+
+.empty-block {
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 40px;
+  text-align: center;
+  color: var(--text-faint);
+}
+.empty-block p {
+  font-size: 15px;
+  color: var(--text-dim);
+  margin-bottom: 4px;
+}
+.empty-block span {
+  font-size: 13px;
+}
+
+/* ---------- Track grid (vinyl sleeve cards) ---------- */
+.track-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 18px;
+}
+
+.track-card {
+  background: var(--panel);
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+  overflow: hidden;
+  transition:
+    border-color 0.2s,
+    transform 0.2s;
+}
+.track-card:hover {
+  border-color: var(--border);
+  transform: translateY(-2px);
+}
+
+.track-art {
+  aspect-ratio: 1;
+  background: linear-gradient(145deg, var(--panel-raised), var(--panel));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  color: var(--text-faint);
+}
+.track-art-icon {
+  position: relative;
+  z-index: 2;
+}
+
+.vinyl {
+  position: absolute;
+  width: 130%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at center,
+    var(--bg) 0 8%,
+    #000 8% 9%,
+    var(--panel-raised) 9% 100%
+  );
+  right: -35%;
+  bottom: -35%;
+  opacity: 0.5;
+  transition: transform 0.4s ease;
+}
+.track-card:hover .vinyl {
+  transform: rotate(25deg) translate(-4px, -4px);
+}
+
+.track-info {
+  padding: 14px 16px 16px;
+}
+.track-title {
+  font-family: var(--font-display);
+  font-size: 16.5px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.track-artist {
+  font-size: 12.5px;
+  color: var(--text-faint);
+  margin-top: 2px;
+  margin-bottom: 12px;
+}
+
+.track-audio {
+  width: 100%;
+  height: 34px;
+}
+.track-audio::-webkit-media-controls-panel {
+  background: var(--panel-raised);
+}
+
+/* ---------- Pagination ---------- */
+.pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 32px;
+}
+.pager button {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  padding: 9px 16px;
+  border-radius: var(--radius);
+  font-size: 13.5px;
+  transition: all 0.15s;
+}
+.pager button:hover:not(:disabled) {
+  border-color: var(--accent-dim);
+  color: var(--text);
+}
+.pager button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.pager span {
+  font-size: 13px;
+  color: var(--text-faint);
+}
