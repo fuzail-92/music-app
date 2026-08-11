@@ -1,7 +1,11 @@
-import { Link, Outlet, useLocation } from "react-router-dom";
+import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import api from "../api/axios";
 
 function Layout() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
 
   const navItem = (to, label) => (
     <Link
@@ -11,6 +15,18 @@ function Layout() {
       {label}
     </Link>
   );
+
+  async function handleLogout() {
+    try {
+      await api.post("/auth/logout");
+    } catch (err) {
+      // agar backend call fail bhi ho, local session clear kar dete hain
+      console.error("Logout error:", err);
+    } finally {
+      logout();
+      navigate("/login");
+    }
+  }
 
   return (
     <div className="shell">
@@ -36,11 +52,41 @@ function Layout() {
 
         <nav className="deck-nav">
           {navItem("/", "Browse")}
-          {navItem("/playlists", "Playlists")}
-          {navItem("/upload", "Upload")}
+          {user && navItem("/playlists", "Playlists")}
+          {user?.role === "artist" && navItem("/upload", "Upload")}
+          {user?.role === "artist" && navItem("/albums/new", "New album")}
         </nav>
 
-        <div className="deck-foot">{navItem("/login", "Log in")}</div>
+        <div className="deck-foot">
+          {user ? (
+            <div className="account-block">
+              <div className="account-avatar">
+                {user.username.charAt(0).toUpperCase()}
+              </div>
+              <div className="account-info">
+                <div className="account-name">{user.username}</div>
+                <div className="account-role">{user.role}</div>
+              </div>
+              <button
+                className="logout-btn"
+                onClick={handleLogout}
+                title="Log out"
+              >
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none">
+                  <path
+                    d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"
+                    stroke="currentColor"
+                    strokeWidth="1.6"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </button>
+            </div>
+          ) : (
+            navItem("/login", "Log in")
+          )}
+        </div>
       </aside>
 
       <main className="stage">
